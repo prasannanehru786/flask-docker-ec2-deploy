@@ -27,9 +27,12 @@ jobs:
           exit
         EOF
 
-    - name: Copy app to aws EC2 
+    
+    - name: Copy app to EC2
       run: |
-        scp -i key.pem -o StrictHostKeyChecking=no -r . ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/flaskapp
+       tar --exclude='.git' --exclude='key.pem' -czf app.tar.gz .
+       scp -i key.pem -o StrictHostKeyChecking=no app.tar.gz ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/flaskapp
+       ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "cd ~/flaskapp && tar -xzf app.tar.gz && rm app.tar.gz"
 
     - name: Build and run container on EC2
       run: |
