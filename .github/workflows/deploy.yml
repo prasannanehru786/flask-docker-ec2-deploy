@@ -18,33 +18,15 @@ jobs:
           echo "${{ secrets.EC2_KEY }}" | base64 -d > key.pem
           chmod 400 key.pem
 
-      - name: Prepare EC2 instance (install Docker if needed)
+      - name: Copy app to EC2
         run: |
-          ssh -tt -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<EOF
-            set -e
-
-            echo "📦 Updating system..."
-            sudo yum update -y
-
-            echo "🐳 Installing Docker if not installed..."
-            if ! command -v docker &> /dev/null; then
-              sudo yum install -y docker
-              sudo service docker start
-              sudo usermod -aG docker \$USER
-            else
-              sudo service docker start
-            fi
-
-            echo "📁 Preparing app directory..."
-            mkdir -p ~/flaskapp
-
-            echo "✅ EC2 ready for deployment."
-          EOF
-
-      - name: Archive and copy app to EC2
-        run: |
+          echo "📦 Archiving app..."
           tar --exclude='.git' --exclude='key.pem' -czf app.tar.gz .
-          scp -i key.pem -o StrictHostKeyChecking=no app.tar.gz ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/flaskapp
+
+          echo "📤 Copying archive to EC2..."
+          scp -o StrictHostKeyChecking=no -i key.pem app.tar.gz ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/flaskapp
+
+          echo "📦 Extracting app on EC2..."
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<EOF
             cd ~/flaskapp
             tar -xzf app.tar.gz
@@ -53,23 +35,23 @@ jobs:
 
       - name: Build and run Docker container on EC2
         run: |
-          ssh -T -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<EOF
+          echo "🐳 Deploying container on EC2..."
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<EOF
             set -e
             cd ~/flaskapp
 
             echo "🔧 Building Docker image..."
             docker build -t flaskapp .
 
-            echo "🛑 Stopping old container (if any)..."
+            echo "🛑 Removing old container if any..."
             docker rm -f flaskapp || true
 
-            echo "🚀 Running new container..."
+            echo "🚀 Running Flask app..."
             docker run -d -p 5000:5000 --name flaskapp flaskapp
 
-            echo "✅ Container running:"
+            echo "✅ Current running containers:"
             docker ps
-          EOF
-
+         EOF
 
 
 
