@@ -17,7 +17,6 @@ jobs:
       run: |
         echo "${{ secrets.EC2_KEY }}" | base64 -d > key.pem
         chmod 400 key.pem
-
     - name: Prepare EC2 instance (install Docker if needed)
       run: |
         ssh -tt -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
@@ -41,7 +40,6 @@ jobs:
           echo "✅ EC2 ready for deployment."
           exit
        EOF
-
     - name: Archive and copy app to EC2
       run: |
         tar --exclude='.git' --exclude='key.pem' -czf app.tar.gz .
@@ -51,7 +49,6 @@ jobs:
           tar -xzf app.tar.gz
           rm app.tar.gz
        EOF
-
     - name: Build and run Docker container on EC2
       run: |
         ssh -T -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
