@@ -21,7 +21,7 @@ jobs:
       - name: Copy app to EC2
         run: |
           echo "📦 Archiving app..."
-          tar --exclude='.git' --exclude='key.pem' -czf app.tar.gz .
+          tar --exclude='.git' --exclude='key.pem' --warning=no-file-changed -czf app.tar.gz .
 
           echo "📤 Copying archive to EC2..."
           scp -o StrictHostKeyChecking=no -i key.pem app.tar.gz ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/flaskapp
