@@ -20,7 +20,7 @@ jobs:
 
       - name: Prepare EC2 instance (install Docker if needed)
         run: |
-          ssh -tt -o StrictHostKeyChecking=no ServerAliveInterval=60 -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<EOF
+          ssh -tt -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<EOF
             set -e
 
             echo "📦 Updating system..."
@@ -53,7 +53,7 @@ jobs:
 
       - name: Build and run Docker container on EC2
         run: |
-          ssh -T -o StrictHostKeyChecking=no ServerAliveInterval=60 -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<EOF
+          ssh -T -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<EOF
             set -e
             cd ~/flaskapp
 
