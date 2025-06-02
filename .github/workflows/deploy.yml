@@ -39,7 +39,7 @@ jobs:
             mkdir -p ~/flaskapp
 
             echo "✅ EC2 ready for deployment."
-         EOF
+          EOF
 
       - name: Archive and copy app to EC2
         run: |
@@ -49,7 +49,7 @@ jobs:
             cd ~/flaskapp
             tar -xzf app.tar.gz
             rm app.tar.gz
-         EOF
+          EOF
 
       - name: Build and run Docker container on EC2
         run: |
@@ -68,7 +68,7 @@ jobs:
 
             echo "✅ Container running:"
             docker ps
-         EOF
+          EOF
 
 
 
